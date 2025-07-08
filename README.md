@@ -8,6 +8,8 @@ A Retico extension for real-time scene graph generation, embedding, memory manag
 - Store and query scene graphs in a memory module across multiple camera sources.
 - Visualize scene graphs on images with bounding boxes and relationship arrows.
 
+To tag different camera sources, use the `meta_data` field when creating the video producing module and populate `camera_name` with the camera identifier. This will allow the scene graph module to differentiate between inputs from different cameras.
+
 ## Prerequisites
 - Python 3.8 or higher
 - PyTorch (with CUDA support for GPU acceleration)
