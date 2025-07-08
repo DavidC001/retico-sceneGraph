@@ -17,14 +17,9 @@ A Retico extension for real-time scene graph generation, embedding, memory manag
 - RelTR repository clone and pretrained checkpoint
 
 ## Installation
-1. Clone this repository:
+1. Clone and install this repository:
    ```
-   git clone https://github.com/yourusername/retico-sceneGraph.git
-   cd retico-sceneGraph
-   ```
-2. Install the package:
-   ```
-   pip install .
+   pip install git+https://github.com/retico-team/retico-sceneGraph.git
    ```
 3. Clone the [RelTR](https://github.com/yrcong/RelTR.git) repository and set `RelTR_PATH` to the path of the cloned RelTR
 4. Additionaly the `retico-core` and `retico-vision` need to be on your Python path.
