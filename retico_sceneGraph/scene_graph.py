@@ -129,8 +129,6 @@ class SceneGraphModule(retico_core.AbstractModule):
                            num_rel_classes = 51,
                     num_entities=100, num_triplets=200)
 
-        # The checkpoint is pretrained on Visual Genome
-        device = "cuda" if torch.cuda.is_available() else "cpu"
         state_dict = torch.load(self.model_path, weights_only=False)
         self.model.load_state_dict(state_dict["model"])
         self.model.eval()

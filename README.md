@@ -1,31 +1,39 @@
 # retico-sceneGraph
 
-git clone the RelTR repository:
+A Retico extension for real-time scene graph generation, embedding, memory management, and visualization using the RelTR model.
+
+## Features
+- Generate scene graphs from images, extracting objects and their relationships.
+- Embed triplets for Retrieval-Augmented Generation (RAG) queries.
+- Store and query scene graphs in a memory module across multiple camera sources.
+- Visualize scene graphs on images with bounding boxes and relationship arrows.
+
+## Prerequisites
+- Python 3.8 or higher
+- PyTorch (with CUDA support for GPU acceleration)
+- torchvision compatible with the RelTR codebase
+- Transformers and SentenceTransformers
+- retico-core and retico-vision libraries
+- RelTR repository clone and pretrained checkpoint
+
+## Installation
+1. Clone this repository:
+   ```
+   git clone https://github.com/yourusername/retico-sceneGraph.git
+   cd retico-sceneGraph
+   ```
+2. Install the package:
+   ```
+   pip install .
+   ```
+3. Clone the [RelTR](https://github.com/yrcong/RelTR.git) repository and set `RelTR_PATH` to the path of the cloned RelTR
+4. Additionaly the `retico-core` and `retico-vision` need to be on your Python path.
+
+## Download Pretrained Model
+Download the RelTR checkpoint and place it in the project root:
 ```bash
-git clone https://github.com/yrcong/RelTR.git
+gdown "https://drive.google.com/uc?id=1id6oD_iwiNDD6HyCn2ORgRTIKkPD3tUD"
 ```
-and add it to your Environment Variables `RelTR_PATH` pointing to the cloned repository, if not it will default to `./RelTR`.
 
-download the model from https://drive.google.com/uc?id=1id6oD_iwiNDD6HyCn2ORgRTIKkPD3tUD
-
-# warnings
-current implementation with current libraries give this warning:
-```
-C:\Users\david\anaconda3\envs\retico_mod\lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
-  warnings.warn(
-C:\Users\david\anaconda3\envs\retico_mod\lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
-```
-This is due to the RelTR code using an older version of torchvision. Newer versions might not work with the current implementation.
- 
-# References
-```
-@misc{cong2023reltrrelationtransformerscene,
-      title={RelTR: Relation Transformer for Scene Graph Generation}, 
-      author={Yuren Cong and Michael Ying Yang and Bodo Rosenhahn},
-      year={2023},
-      eprint={2201.11460},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2201.11460}, 
-}
-```
+## Usage
+To see and example of how to use the scene graph unit, refer to the `example.py` runner script.
