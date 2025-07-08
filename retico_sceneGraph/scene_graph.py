@@ -22,11 +22,11 @@ import networkx as nx
 """packages imported from RelTR repository"""
 import sys
 import os
-sys.path.append(os.getenv("RelTR_PATH", "."))
-from RelTR.models.backbone import Backbone, Joiner
-from RelTR.models.position_encoding import PositionEmbeddingSine
-from RelTR.models.transformer import Transformer
-from RelTR.models.reltr import RelTR
+sys.path.append(os.getenv("RelTR_PATH", "./RelTR"))
+from models.backbone import Backbone, Joiner
+from models.position_encoding import PositionEmbeddingSine
+from models.transformer import Transformer
+from models.reltr import RelTR
 
 class SceneGraphModule(retico_core.AbstractModule):
     """

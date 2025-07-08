@@ -23,7 +23,7 @@ To tag different camera sources, use the `meta_data` field when creating the vid
    ```
    pip install git+https://github.com/retico-team/retico-sceneGraph.git
    ```
-2. Clone the [RelTR](https://github.com/yrcong/RelTR.git) repository and set `RelTR_PATH` to the path containing the RelTR folder.
+2. Clone the [RelTR](https://github.com/yrcong/RelTR.git) repository and set `RelTR_PATH` to the path of the cloned repository.
 3. Add `retico-core` and `retico-vision` to your Python path.
 
 ## Download Pretrained Model
