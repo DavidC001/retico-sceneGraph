@@ -62,13 +62,14 @@ class SceneGraphModule(retico_core.AbstractModule):
     def description():
         return "A Retico module for scene graph generation from images. It processes images to extract objects, their relationships, and generates a scene graph."
     
-    def __init__(self, topk=10, model_path="./checkpoint0149.pth", IoU_threshold=0.5, timeout=0.75, **kwargs):
+    def __init__(self, topk=10, model_path="./checkpoint0149.pth", confidence_threshold=0.3, IoU_threshold=0.75, timeout=0.75, **kwargs):
         """
         Initializes the SceneGraphModule with the given classes and predicates.
         
         Parameters:
         - topk: Number of top predictions to keep (default is 10).
         - model_path: Path to the pre-trained model checkpoint (default is ./checkpoint0149.pth).
+        - confidence_threshold: Threshold for filtering predictions based on confidence scores (default is 0.3).
         - IoU_threshold: Threshold for Intersection over Union to consider two bounding boxes as the same object (default is 0.75).
         - timeout: Time to wait when no image is available in the processing thread (default is 0.5 seconds).
         """
@@ -76,6 +77,7 @@ class SceneGraphModule(retico_core.AbstractModule):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.topk = topk  # Number of top predictions to keep
+        self.confidence_threshold = confidence_threshold  # Confidence threshold for filtering predictions
         self.IoU_threshold = torch.tensor(IoU_threshold, dtype=torch.float32, device=self.device)
         self.model_path = model_path  # Path to the pre-trained model checkpoint
         
@@ -169,13 +171,13 @@ class SceneGraphModule(retico_core.AbstractModule):
         with torch.no_grad():
             outputs = self.model(img)
 
-        # keep only predictions with >0.3 confidence
+        # keep only predictions with >self.confidence_threshold confidence
         probas = outputs['rel_logits'].softmax(-1)[0, :, :-1]
         probas_sub = outputs['sub_logits'].softmax(-1)[0, :, :-1]
         probas_obj = outputs['obj_logits'].softmax(-1)[0, :, :-1]
-        keep = torch.logical_and(probas.max(-1).values > 0.3, torch.logical_and(probas_sub.max(-1).values > 0.3,
-                                                                                probas_obj.max(-1).values > 0.3))
-        
+        keep = torch.logical_and(probas.max(-1).values > self.confidence_threshold, torch.logical_and(probas_sub.max(-1).values > self.confidence_threshold,
+                                                                                probas_obj.max(-1).values > self.confidence_threshold))
+
         # convert boxes from [0; 1] to image scales
         sub_bboxes_scaled = self.rescale_bboxes(outputs['sub_boxes'][0, keep], image.size)
         obj_bboxes_scaled = self.rescale_bboxes(outputs['obj_boxes'][0, keep], image.size)
