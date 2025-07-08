@@ -5,10 +5,7 @@ from retico_sceneGraph import SceneGraphModule, SceneGraphDrawingModule, SceneGr
 
 webcam = WebcamModule(meta_data={"camera_name": "office"})
 screen = ScreenModule()
-scene_graph = SceneGraphModule(
-    classes=["person", "car", "dog", "cat", "tree", "bicycle", "mouse", "screen", "monitor"],
-    predicates=["on", "near", "in front of", "behind", "next to", "above", "below", "left of", "right of"],
-)
+scene_graph = SceneGraphModule()
 scene_graph_drawing = SceneGraphDrawingModule()
 scene_graph_memory = SceneGraphMemory()
 debug = DebugModule()
