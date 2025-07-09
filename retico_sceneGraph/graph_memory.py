@@ -45,7 +45,7 @@ class SceneGraphEmbedder():
         """
         Loops through the triplets in the scene graph unit and generates embeddings for them.
         """
-        triplets = self._generate_triplets(graph)
+        triplets = self.generate_triplets(graph)
         embeddings = self._generate_embeddings(triplets)
         
         embeddings = quantize_embeddings(embeddings, self.embedding_precision) if self.embedding_precision else embeddings
@@ -58,7 +58,8 @@ class SceneGraphEmbedder():
         """
         return self.model.encode([query],  prompt_name="query")[0]
 
-    def _generate_triplets(self, graph: nx.Graph) -> list[str]:
+    @staticmethod
+    def generate_triplets(graph: nx.Graph) -> list[str]:
         """
         Generate sentences from the triplets in the scene graph.
         
@@ -75,7 +76,7 @@ class SceneGraphEmbedder():
             source_label = graph.nodes[source]['label']
             target_label = graph.nodes[target]['label']
             relation = data['label']
-            triplets.append(f"{source_label} {relation} {target_label}")
+            triplets.append(f"{source_label} {source} {relation} {target_label} {target}")
         
         return triplets
 
