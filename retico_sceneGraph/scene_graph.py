@@ -275,6 +275,7 @@ class SceneGraphModule(retico_core.AbstractModule):
 
     def _process_image_loop(self):
         while self._is_running:
+            proc_time = time.time()
             for camera_name in self._image_queues:
                 if len(self._image_queues[camera_name]) > 0:
                     image_iu = self._image_queues[camera_name].popleft()
@@ -294,7 +295,10 @@ class SceneGraphModule(retico_core.AbstractModule):
                     
                     update_message = retico_core.UpdateMessage.from_iu(output_iu, retico_core.UpdateType.ADD)
                     self.append(update_message)
-                time.sleep(self._timeout)
+            end_time = time.time()
+            # Calculate the time taken for processing
+            elapsed_time = end_time - proc_time
+            time.sleep(max(0, self._timeout - elapsed_time))  # Ensure we wait at least the timeout duration
             
             
 class SceneGraphDrawingModule(retico_core.AbstractModule):
