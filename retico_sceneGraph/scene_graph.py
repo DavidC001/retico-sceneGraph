@@ -62,7 +62,7 @@ class SceneGraphModule(retico_core.AbstractModule):
     def description():
         return "A Retico module for scene graph generation from images. It processes images to extract objects, their relationships, and generates a scene graph."
     
-    def __init__(self, topk=10, model_path="./checkpoint0149.pth", confidence_threshold=0.3, IoU_threshold=0.75, timeout=0.75, **kwargs):
+    def __init__(self, topk=10, model_path="./checkpoint0149.pth", confidence_threshold=0.3, IoU_threshold=0.75, timeout=0.2, **kwargs):
         """
         Initializes the SceneGraphModule with the given classes and predicates.
         
@@ -71,7 +71,7 @@ class SceneGraphModule(retico_core.AbstractModule):
         - model_path: Path to the pre-trained model checkpoint (default is ./checkpoint0149.pth).
         - confidence_threshold: Threshold for filtering predictions based on confidence scores (default is 0.3).
         - IoU_threshold: Threshold for Intersection over Union to consider two bounding boxes as the same object (default is 0.75).
-        - timeout: Time to wait when no image is available in the processing thread (default is 0.5 seconds).
+        - timeout: Time to wait between processing images to avoid busy-waiting and high system usage (default is 0.2 seconds).
         """
         super().__init__(**kwargs)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -81,8 +81,8 @@ class SceneGraphModule(retico_core.AbstractModule):
         self.IoU_threshold = torch.tensor(IoU_threshold, dtype=torch.float32, device=self.device)
         self.model_path = model_path  # Path to the pre-trained model checkpoint
         
-        self._image_queue = deque(maxlen=1)  # Queue to hold the latest image IU
-        self._timeout = timeout  # Time to wait when no image is available
+        self._image_queues = {}  # Queue to hold the latest image IU
+        self._timeout = timeout  # Time to wait
         self._is_running = False
         
     
@@ -111,8 +111,13 @@ class SceneGraphModule(retico_core.AbstractModule):
         for iu, ut in update_message:
             if ut != retico_core.UpdateType.ADD:
                 continue
-            self._image_queue.append(iu)
-    
+            
+            camera_name = iu.creator.meta_data.get("camera_name", "default")
+            if camera_name not in self._image_queues:
+                self._image_queues[camera_name] = deque(maxlen=1)  # Keep only the latest image
+                
+            self._image_queues[camera_name].append(iu)
+
     def _prepare_model(self):
         position_embedding = PositionEmbeddingSine(128, normalize=True)
         backbone = Backbone('resnet50', False, False, False)
@@ -270,28 +275,26 @@ class SceneGraphModule(retico_core.AbstractModule):
 
     def _process_image_loop(self):
         while self._is_running:
-            if len(self._image_queue) == 0:
-                time.sleep(self._timeout)
-                continue
-            
-            image_iu = self._image_queue.popleft()
-            
-            image = image_iu.image
-            if image is None:
-                continue
+            for camera_name in self._image_queues:
+                if len(self._image_queues[camera_name]) > 0:
+                    image_iu = self._image_queues[camera_name].popleft()
+                    image = image_iu.image
+                    if image is None:
+                        continue
 
-            # process the image through the model
-            output = self._get_model_output(image)
-            # build the scene graph from the model output
-            nodes, edges, bboxes = self._build_scene_graph(output)
-            
-            # create a new SceneGraphUnit with the output
-            output_iu : SceneGraphUnit = self.create_iu(image_iu)
-            output_iu.build_graph(nodes, edges)
-            output_iu.set_bboxes(bboxes)
-            
-            update_message = retico_core.UpdateMessage.from_iu(output_iu, retico_core.UpdateType.ADD)
-            self.append(update_message)
+                    # process the image through the model
+                    output = self._get_model_output(image)
+                    # build the scene graph from the model output
+                    nodes, edges, bboxes = self._build_scene_graph(output)
+                    
+                    # create a new SceneGraphUnit with the output
+                    output_iu : SceneGraphUnit = self.create_iu(image_iu)
+                    output_iu.build_graph(nodes, edges)
+                    output_iu.set_bboxes(bboxes)
+                    
+                    update_message = retico_core.UpdateMessage.from_iu(output_iu, retico_core.UpdateType.ADD)
+                    self.append(update_message)
+                time.sleep(self._timeout)
             
             
 class SceneGraphDrawingModule(retico_core.AbstractModule):
@@ -311,6 +314,15 @@ class SceneGraphDrawingModule(retico_core.AbstractModule):
     def output_iu(self):
         return retico_vision.ImageIU
     
+    def __init__(self, camera_name, **kwargs):
+        """ Initializes the SceneGraphDrawingModule.
+        
+        Parameters:
+        - camera_name: The name of the camera for which the scene graph will be drawn. This is used to filter SceneGraphUnits based on their metadata.
+        """
+        super().__init__(**kwargs)
+        self.camera_name = camera_name
+
     def process_update(self, update_message):
         for iu, ut in update_message:
             if ut != retico_core.UpdateType.ADD:
@@ -318,7 +330,11 @@ class SceneGraphDrawingModule(retico_core.AbstractModule):
 
             if not isinstance(iu, SceneGraphUnit):
                 continue
-
+            
+            # Check if the SceneGraphUnit is for the specified camera
+            if iu.grounded_in.creator.meta_data.get("camera_name", "default") != self.camera_name:
+                continue
+            
             # Draw the scene graph onto the image
             image = self._draw_scene_graph(iu)
 

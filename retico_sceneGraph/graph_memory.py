@@ -180,7 +180,7 @@ class SceneGraphMemory(retico_core.AbstractConsumingModule):
         with self._lock:
             return self._graph.get(camera_name, None)
 
-    def query_camera(self, camera_name: str, query: str, topk=1) -> nx.Graph:
+    def query_camera(self, camera_name: str, query: str, topk=1, min_sim=0.5) -> nx.Graph:
         """
         Queries the memory for a given camera name and returns the scene graph that matches the query and its neighbors.
         """
@@ -201,6 +201,12 @@ class SceneGraphMemory(retico_core.AbstractConsumingModule):
         # Get the indices of the top-k most similar embeddings
         topk = min(topk, len(similarity_scores))
         topk_indices = torch.topk(similarity_scores, k=topk).indices
+
+        # Filter out the indices that do not meet the minimum similarity threshold
+        topk_indices = topk_indices[similarity_scores[topk_indices] >= min_sim]
+
+        if len(topk_indices) == 0:
+            return nx.Graph()
         
         # Construct the graph with only the top-k nodes and their neighbors
         topk_graph = nx.Graph()
