@@ -10,6 +10,11 @@ A Retico extension for real-time scene graph generation, embedding, memory manag
 - Visualize scene graphs on images with bounding boxes and relationship arrows.
 
 To tag different camera sources, use the `meta_data` field when creating the video producing module and populate `camera_name` with the camera identifier. This will allow the scene graph module to differentiate between inputs from different cameras.
+The methods that allow querying the `SceneGraphMemory` are the following:
+- `get_camera_names()`: returns all the cameras available by their name.
+- `get_scene_graph(camera_name)`: returns the scene graph for a given camera name.
+- `query_camera(camera_name, query)`: queries the memory for a given camera name and returns the scene sub-graph that matches the query and its neighbors.
+- `query_memory(query)`: queries the memory for a given query string and returns for each camera the scene sub-graph that matches the query and its neighbors.
 
 ## Prerequisites
 - Python 3.8 or higher
