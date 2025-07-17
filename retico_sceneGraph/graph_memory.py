@@ -182,7 +182,7 @@ class SceneGraphMemory(retico_core.AbstractConsumingModule):
 
     def query_camera(self, camera_name: str, query: str, topk=1, min_sim=0.5) -> nx.Graph:
         """
-        Queries the memory for a given camera name and returns the scene graph that matches the query and its neighbors.
+        queries the memory for a given camera name and returns the scene sub-graph that matches the query and its neighbors.
         """
         with self._lock:
             graph :nx.Graph = deepcopy(self._graph.get(camera_name, None))
@@ -222,7 +222,7 @@ class SceneGraphMemory(retico_core.AbstractConsumingModule):
 
     def query_memory(self, query: str, topk=1) -> dict[str, nx.Graph]:
         """
-        Queries the memory for a given query string and returns the scene graph that matches the query and its neighbors.
+        queries the memory for a given query string and returns for each camera the scene sub-graph that matches the query and its neighbors.
         """
         result = {}
         for camera_name in self.get_camera_names():
