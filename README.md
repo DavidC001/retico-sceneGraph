@@ -1,4 +1,5 @@
 # retico-sceneGraph
+<img width="1797" height="710" alt="image" src="https://github.com/user-attachments/assets/9b481f69-f9f1-41b8-87c9-8473cadf5416" />
 
 A Retico extension for real-time scene graph generation, embedding, memory management, and visualization using the RelTR model.
 
